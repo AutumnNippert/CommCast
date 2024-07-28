@@ -1,8 +1,10 @@
-* Secure prod hosting
-* Add https Hosting
-* Add User Online Status
-* Make a much better UI (Dark Mode, auto scroll down, good fonts, etc)
-* (Ascii) Image Support
+* Implement gunicorn (or something else with https/tls support) for hosting
+* Add User Online Status - 
 * Different Channels
 * User Accounts
 * Sanitize User Input for XSS
+* add Pinging system to highlight messages
+* Add a way to click on links posted in chat
+* Add a way to put files in chat
+* Add a way to put images in chat
+* Make look not bad on phone

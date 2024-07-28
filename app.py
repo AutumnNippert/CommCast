@@ -3,6 +3,9 @@ from flask_socketio import SocketIO, emit
 import json
 import os
 
+HOST = '0.0.0.0'
+PORT = 5000
+
 app = Flask(__name__)
 socketio = SocketIO(app)
 CHAT_FILE = 'chat.json'
@@ -58,4 +61,5 @@ def handle_user_disconnect(username):
     print("Emitting update_users")
 
 if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', port=5000)
+    print(f"Running server at http://{HOST}:{PORT}")
+    socketio.run(app, host=HOST, port=PORT)
