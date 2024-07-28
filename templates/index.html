@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat</title>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"
+      integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA=="
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <h1>Chat Messages</h1>
+    <ul id="messages"></ul>
+    <form id="messageForm">
+      <input type="text" id="user" placeholder="User" />
+      <input type="text" id="message" placeholder="Message" />
+      <button type="submit">Send</button>
+    </form>
+    <script>
+      var socket = io();
+
+      // Fetch initial messages
+      fetch("/messages")
+        .then((response) => response.json())
+        .then((data) => {
+          data.forEach((message) => {
+            addMessage(message);
+          });
+        });
+
+      // Listen for new messages
+      socket.on("new_message", function (message) {
+        addMessage(message);
+      });
+
+      socket.on('connect', function() {
+        socket.emit('user_connect', {data: 'I\'m connected!'});
+    });
+
+      // Add message to the list
+      function addMessage(message) {
+        var li = document.createElement("li");
+        li.textContent = message.user + ": " + message.message;
+        document.getElementById("messages").appendChild(li);
+      }
+
+      // Handle form submission
+      document
+        .getElementById("messageForm")
+        .addEventListener("submit", function (event) {
+          event.preventDefault();
+          var user = document.getElementById("user").value;
+          var message = document.getElementById("message").value;
+          fetch("/messages", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ user: user, message: message }),
+          });
+          document.getElementById("message").value = "";
+        });
+    </script>
+  </body>
+</html>
