@@ -45,89 +45,162 @@
       // Now userId contains the unique ID for the user
       console.log("User ID:", userId);
     </script>
-<style>
-  *{
-    
-    font-size: large;
-  }
-  body {
-    display: flex;
-    height: 100vh;
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background-color: #2f3136;
-    color: white;
-  }
-  #sidebar {
-    width: 250px;
-    background-color: #202225;
-    padding: 10px;
-    box-sizing: border-box;
-  }
-  #main {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-  }
-  #messages {
-    flex: 1;
-    padding: 20px;
-    overflow-y: auto;
-  }
-  #messages li {
-    list-style: none;
-    padding: 10px;
-    margin-bottom: 10px;
-    background-color: #36393f;
-    border-radius: 5px;
-  }
-  #messageForm {
-    display: flex;
-    padding: 10px;
-    background-color: #40444b;
-  }
-  #messageForm input {
-    flex: 1;
-    padding: 10px;
-    margin-right: 10px;
-    border: none;
-    border-radius: 20px;
-    background-color: #2f3136;
-    color: white;
-  }
-  #messageForm button {
-    padding: 10px;
-    border: none;
-    border-radius: 5px;
-    background-color: #7289da;
-    color: white;
-    cursor: pointer;
-  }
-  #messageForm button:hover {
-    background-color: #5b6eae;
-  }
-  #onlineUsers {
-    width: 200px;
-    background-color: #202225;
-    padding: 10px;
-    box-sizing: border-box;
-  }
-  #onlineUsers h2 {
-    margin-top: 0;
-  }
-  #onlineUsers ul {
-    list-style: none;
-    padding: 0;
-  }
-  #onlineUsers li {
-    padding: 10px;
-    background-color: #36393f;
-    margin-bottom: 10px;
-    border-radius: 5px;
-  }
-</style>
+    <style>
+      * {
+        font-size: large;
+      }
+      body {
+        display: flex;
+        flex-direction: row;
+        height: 100vh;
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background-color: #2f3136;
+        color: white;
+      }
+      #topBar {
+        display: none;
+        justify-content: space-between;
+        align-items: center;
+        background-color: #202225;
+        padding: 10px;
+        box-sizing: border-box;
+      }
+      #topBar button {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+      }
+      #sidebar,
+      #onlineUsers {
+        display: flex;
+        flex-direction: column;
+        position: sticky;
+        top: 0;
+        bottom: 0;
+        width: 250px;
+        background-color: #202225;
+        padding: 10px;
+        box-sizing: border-box;
+        overflow-y: auto;
+        transition: transform 0.3s ease;
+      }
+      #sidebar {
+        left: 0;
+      }
+      #onlineUsers {
+        right: 0;
+      }
+      #main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      #main.dimmed {
+  pointer-events: none;
+  opacity: 0.5;
+}
+      #messages {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+      }
+      #messages li {
+        list-style: none;
+        padding: 10px;
+        margin-bottom: 10px;
+        background-color: #36393f;
+        border-radius: 5px;
+      }
+      #messageForm {
+        display: flex;
+        padding: 10px;
+        background-color: #40444b;
+      }
+      #messageForm input {
+        flex: 1;
+        padding: 10px;
+        margin-right: 10px;
+        border: none;
+        border-radius: 20px;
+        background-color: #2f3136;
+        color: white;
+      }
+      #messageForm button {
+        padding: 10px;
+        border: none;
+        border-radius: 5px;
+        background-color: #7289da;
+        color: white;
+        cursor: pointer;
+      }
+      #messageForm button:hover {
+        background-color: #5b6eae;
+      }
+      #onlineUsers {
+        width: 200px;
+        background-color: #202225;
+        padding: 10px;
+        box-sizing: border-box;
+      }
+      #onlineUsers h2 {
+        margin-top: 0;
+      }
+      #onlineUsers ul {
+        list-style: none;
+        padding: 0;
+      }
+      #onlineUsers li {
+        padding: 10px;
+        background-color: #36393f;
+        margin-bottom: 10px;
+        border-radius: 5px;
+      }
+      @media (max-width: 768px) {
+        #topBar {
+          display: flex;
+          position: fixed;
+          top: 0;
+          width: 100%;
+          z-index: 1000;
+        }
+        #sidebar,
+        #onlineUsers {
+          position: fixed;
+          top: 50px;
+          bottom: 0;
+          transform: translateX(-100%);
+          z-index: 999;
+        }
+        #onlineUsers {
+          transform: translateX(100%);
+        }
+        #main {
+          margin-top: 50px;
+          flex: 1;
+          width: 100%;
+        }
+      }
+      @media (max-width: 480px) {
+        #topBar {
+          position: fixed;
+          top: 0;
+          width: 100%;
+          z-index: 1000;
+        }
+        #main {
+          margin-top: 50px;
+        }
+      }
+    </style>
   </head>
   <body>
+    <div id="topBar">
+      <button id="toggleSidebar">&#9776;</button>
+      <button id="toggleUsers">&#128100;</button>
+    </div>
     <div id="sidebar">
       <h2>Channels</h2>
       <!-- Add your channels or navigation here -->
@@ -147,6 +220,70 @@
       <ul id="offline-users"></ul>
     </div>
     <script>
+      document.getElementById("toggleSidebar").addEventListener("click", function () {
+        var sidebar = document.getElementById("sidebar");
+        var onlineUsers = document.getElementById("onlineUsers");
+        var main = document.getElementById("main");
+    
+        if (sidebar.style.transform === "translateX(0%)") {
+          sidebar.style.transform = "translateX(-100%)";
+          main.classList.remove("dimmed");
+        } else {
+          sidebar.style.transform = "translateX(0%)";
+          onlineUsers.style.transform = "translateX(100%)"; // Close onlineUsers if open
+          main.classList.add("dimmed");
+        }
+      });
+    
+      document.getElementById("toggleUsers").addEventListener("click", function () {
+        var onlineUsers = document.getElementById("onlineUsers");
+        var sidebar = document.getElementById("sidebar");
+        var main = document.getElementById("main");
+    
+        if (onlineUsers.style.transform === "translateX(0%)") {
+          onlineUsers.style.transform = "translateX(100%)";
+          main.classList.remove("dimmed");
+        } else {
+          onlineUsers.style.transform = "translateX(0%)";
+          sidebar.style.transform = "translateX(-100%)"; // Close sidebar if open
+          main.classList.add("dimmed");
+        }
+      });
+    
+      window.addEventListener("resize", function () {
+        var main = document.getElementById("main");
+        if (window.innerWidth > 768) {
+          document.getElementById("sidebar").style.transform = "translateX(0%)";
+          document.getElementById("onlineUsers").style.transform = "translateX(0%)";
+          main.classList.remove("dimmed");
+        } else {
+          document.getElementById("sidebar").style.transform = "translateX(-100%)";
+          document.getElementById("onlineUsers").style.transform = "translateX(100%)";
+          main.classList.remove("dimmed");
+        }
+      });
+    
+      document.addEventListener("click", function (event) {
+        var sidebar = document.getElementById("sidebar");
+        var onlineUsers = document.getElementById("onlineUsers");
+        var main = document.getElementById("main");
+    
+        
+        if (window.innerWidth > 768)
+          return;
+        if (
+          !sidebar.contains(event.target) &&
+          !onlineUsers.contains(event.target) &&
+          !document.getElementById("toggleSidebar").contains(event.target) &&
+          !document.getElementById("toggleUsers").contains(event.target)
+        ) {
+          sidebar.style.transform = "translateX(-100%)";
+          onlineUsers.style.transform = "translateX(100%)";
+          main.classList.remove("dimmed");
+        }
+      });
+    </script>
+    <script>
       var socket = io();
 
       // Fetch initial messages
@@ -164,12 +301,12 @@
       });
 
       socket.on("connect", function () {
-        socket.emit("user_connect", userId );
+        socket.emit("user_connect", userId);
       });
 
       window.onbeforeunload = function () {
-        socket.emit('user_disconnect', userId);
-      }
+        socket.emit("user_disconnect", userId);
+      };
 
       socket.on("update_users", function (users) {
         console.log("Recieved: update_users");
@@ -220,16 +357,25 @@
           }
         }
         // change the title of the users list
-        document.getElementById("onlineUsers").getElementsByTagName("h2")[0].textContent = "Users (" + onlineCount + ")";
-        document.getElementById("onlineUsers").getElementsByTagName("h3")[0].textContent = "Online (" + onlineCount + ")";
-        document.getElementById("onlineUsers").getElementsByTagName("h3")[1].textContent = "Offline (" + offlineCount + ")";
+        document
+          .getElementById("onlineUsers")
+          .getElementsByTagName("h2")[0].textContent =
+          "Users (" + onlineCount + ")";
+        document
+          .getElementById("onlineUsers")
+          .getElementsByTagName("h3")[0].textContent =
+          "Online (" + onlineCount + ")";
+        document
+          .getElementById("onlineUsers")
+          .getElementsByTagName("h3")[1].textContent =
+          "Offline (" + offlineCount + ")";
       }
 
       // Handle form submission
       document
         .getElementById("messageForm")
         .addEventListener("submit", function (event) {
-          event.preventDefault();;
+          event.preventDefault();
           var message = document.getElementById("message").value;
           fetch("/messages", {
             method: "POST",
