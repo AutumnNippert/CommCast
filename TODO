@@ -5,3 +5,4 @@
 * (Ascii) Image Support
 * Different Channels
 * User Accounts
+* Sanitize User Input for XSS

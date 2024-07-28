@@ -9,15 +9,143 @@
       integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA=="
       crossorigin="anonymous"
     ></script>
+    <script>
+      // Function to generate a unique ID
+      function generateUserId() {
+        return "user-" + Math.random().toString(36).substr(2, 9);
+      }
+
+      // Function to get a cookie value by name
+      function getCookie(name) {
+        let match = document.cookie.match(
+          new RegExp("(^| )" + name + "=([^;]+)")
+        );
+        if (match) return match[2];
+        return null;
+      }
+
+      // Function to set a cookie
+      function setCookie(name, value, days) {
+        let expires = "";
+        if (days) {
+          let date = new Date();
+          date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+          expires = "; expires=" + date.toUTCString();
+        }
+        document.cookie = name + "=" + (value || "") + expires + "; path=/";
+      }
+
+      // Check if user ID cookie exists, if not, create it
+      let userId = getCookie("userId");
+      if (!userId) {
+        userId = generateUserId();
+        setCookie("userId", userId, 365); // Cookie valid for 1 year
+      }
+
+      // Now userId contains the unique ID for the user
+      console.log("User ID:", userId);
+    </script>
+<style>
+  *{
+    
+    font-size: large;
+  }
+  body {
+    display: flex;
+    height: 100vh;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #2f3136;
+    color: white;
+  }
+  #sidebar {
+    width: 250px;
+    background-color: #202225;
+    padding: 10px;
+    box-sizing: border-box;
+  }
+  #main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  #messages {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+  }
+  #messages li {
+    list-style: none;
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: #36393f;
+    border-radius: 5px;
+  }
+  #messageForm {
+    display: flex;
+    padding: 10px;
+    background-color: #40444b;
+  }
+  #messageForm input {
+    flex: 1;
+    padding: 10px;
+    margin-right: 10px;
+    border: none;
+    border-radius: 20px;
+    background-color: #2f3136;
+    color: white;
+  }
+  #messageForm button {
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #7289da;
+    color: white;
+    cursor: pointer;
+  }
+  #messageForm button:hover {
+    background-color: #5b6eae;
+  }
+  #onlineUsers {
+    width: 200px;
+    background-color: #202225;
+    padding: 10px;
+    box-sizing: border-box;
+  }
+  #onlineUsers h2 {
+    margin-top: 0;
+  }
+  #onlineUsers ul {
+    list-style: none;
+    padding: 0;
+  }
+  #onlineUsers li {
+    padding: 10px;
+    background-color: #36393f;
+    margin-bottom: 10px;
+    border-radius: 5px;
+  }
+</style>
   </head>
   <body>
-    <h1>Chat Messages</h1>
-    <ul id="messages"></ul>
-    <form id="messageForm">
-      <input type="text" id="user" placeholder="User" />
-      <input type="text" id="message" placeholder="Message" />
-      <button type="submit">Send</button>
-    </form>
+    <div id="sidebar">
+      <h2>Channels</h2>
+      <!-- Add your channels or navigation here -->
+    </div>
+    <div id="main">
+      <ul id="messages"></ul>
+      <form id="messageForm">
+        <input type="text" id="message" placeholder="Message" />
+        <button type="submit">Send</button>
+      </form>
+    </div>
+    <div id="onlineUsers">
+      <h2>Users</h2>
+      <h3>Online</h3>
+      <ul id="online-users"></ul>
+      <h3>Offline</h3>
+      <ul id="offline-users"></ul>
+    </div>
     <script>
       var socket = io();
 
@@ -35,30 +163,80 @@
         addMessage(message);
       });
 
-      socket.on('connect', function() {
-        socket.emit('user_connect', {data: 'I\'m connected!'});
-    });
+      socket.on("connect", function () {
+        socket.emit("user_connect", userId );
+      });
+
+      window.onbeforeunload = function () {
+        socket.emit('user_disconnect', userId);
+      }
+
+      socket.on("update_users", function (users) {
+        console.log("Recieved: update_users");
+        updateOnlineUsers(users);
+      });
 
       // Add message to the list
       function addMessage(message) {
         var li = document.createElement("li");
         li.textContent = message.user + ": " + message.message;
         document.getElementById("messages").appendChild(li);
+        li.textContent = message.user + ": " + message.message;
+
+        // Add space if new user
+        if (
+          messages.lastChild &&
+          !messages.lastChild.textContent.startsWith(message.user + ":")
+        ) {
+          var space = document.createElement("li");
+          space.style.height = "20px"; // Adjust height as needed
+          messages.appendChild(space);
+        }
+
+        messages.appendChild(li);
+
+        messages.scrollTop = messages.scrollHeight; // Auto-scroll
+      }
+
+      // Update online users list
+      function updateOnlineUsers(users) {
+        // users is {user:online/offline}
+        var onlineUsers = document.getElementById("online-users");
+        var offlineUsers = document.getElementById("offline-users");
+        onlineUsers.innerHTML = "";
+        offlineUsers.innerHTML = "";
+        onlineCount = 0;
+        offlineCount = 0;
+
+        for (var user in users) {
+          var li = document.createElement("li");
+          li.textContent = user;
+          if (users[user] === "online") {
+            onlineUsers.appendChild(li);
+            onlineCount++;
+          } else {
+            offlineUsers.appendChild(li);
+            offlineCount++;
+          }
+        }
+        // change the title of the users list
+        document.getElementById("onlineUsers").getElementsByTagName("h2")[0].textContent = "Users (" + onlineCount + ")";
+        document.getElementById("onlineUsers").getElementsByTagName("h3")[0].textContent = "Online (" + onlineCount + ")";
+        document.getElementById("onlineUsers").getElementsByTagName("h3")[1].textContent = "Offline (" + offlineCount + ")";
       }
 
       // Handle form submission
       document
         .getElementById("messageForm")
         .addEventListener("submit", function (event) {
-          event.preventDefault();
-          var user = document.getElementById("user").value;
+          event.preventDefault();;
           var message = document.getElementById("message").value;
           fetch("/messages", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ user: user, message: message }),
+            body: JSON.stringify({ user: userId, message: message }),
           });
           document.getElementById("message").value = "";
         });

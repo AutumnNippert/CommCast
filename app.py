@@ -7,6 +7,8 @@ app = Flask(__name__)
 socketio = SocketIO(app)
 CHAT_FILE = 'chat.json'
 
+users = {}
+
 # Ensure the chat file exists
 if not os.path.exists(CHAT_FILE):
     with open(CHAT_FILE, 'w') as file:
@@ -42,6 +44,18 @@ def add_message():
     socketio.emit('new_message', new_message)
     return jsonify(new_message), 201
 
+# SocketIO event handler user_connect and user_disconnect
+@socketio.on('user_connect')
+def handle_user_connect(username):
+    users[username] = 'online'
+    emit('update_users', users)
+    print("Emitting update_users")
+
+@socketio.on('user_disconnect')
+def handle_user_disconnect(username):
+    users[username] = 'offline'
+    emit('update_users', users)
+    print("Emitting update_users")
+
 if __name__ == '__main__':
-    # run on 10.132.200.7:5000
-    socketio.run(app, host='10.132.200.7', port=5000)
+    socketio.run(app, host='0.0.0.0', port=5000)
