@@ -2,9 +2,14 @@
 * Add User Online Status - 
 * Different Channels
 * User Accounts
-* Sanitize User Input for XSS
+* Server side Sanitize User Input for XSS
 * add Pinging system to highlight messages
 * Add a way to click on links posted in chat
 * Add a way to put files in chat
 * Add a way to put images in chat
 * Make look not bad on phone
+* When scrolling up, don't scroll down when new messages come in, but show up a little bubble to skip to the bottom
+* Make ability to do multiline messages
+* Implement character limit on messages
+    * Wait for server comfirmation before sending message
+* When message is sent, server should make chat.json if it doesn't exist
